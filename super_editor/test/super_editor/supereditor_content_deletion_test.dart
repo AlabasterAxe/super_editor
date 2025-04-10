@@ -82,4 +82,120 @@ void main() {
       expect((document.first as ParagraphNode).text.text, equals('Hello world!'));
     });
   });
+
+  // This test is to verify that logic about which node to prefer when deleting across
+  // node boundaries is consistent when the end DocumentPosition is at the end of a node vs in the middle of a node.
+  group("multi node delete consistency >", () {
+    testWidgetsOnAllPlatforms('node 1 start => node 2 end', (tester) async {
+      final testContext = await tester //
+          .createDocument()
+          .withLongDoc()
+          .pump();
+
+      final firstNodeIdBefore = testContext.document.first.id;
+
+      // Delete content starting at beginning of document to the end of the next node.
+      testContext.editor.execute([
+        DeleteContentRequest(
+            documentRange: DocumentRange(
+          start: const DocumentPosition(
+            nodeId: '1',
+            nodePosition: TextNodePosition(offset: 0),
+          ),
+          end: DocumentPosition(
+            nodeId: '2',
+            nodePosition: TextNodePosition(offset: testContext.document.getNodeById('2')!.asTextNode.text.length),
+          ),
+        ))
+      ]);
+      await tester.pump();
+
+      final firstNodeIdAfter = testContext.document.first.id;
+      expect(firstNodeIdAfter, equals(firstNodeIdBefore));
+    });
+
+    testWidgetsOnAllPlatforms('node 1 start => node 2 mid', (tester) async {
+      final testContext = await tester //
+          .createDocument()
+          .withLongDoc()
+          .pump();
+
+      final firstNodeIdBefore = testContext.document.first.id;
+
+      // Delete content starting at beginning of document to just past the beginning of the next node.
+      testContext.editor.execute([
+        DeleteContentRequest(
+            documentRange: const DocumentRange(
+          start: DocumentPosition(
+            nodeId: '1',
+            nodePosition: TextNodePosition(offset: 0),
+          ),
+          end: DocumentPosition(
+            nodeId: '2',
+            nodePosition: TextNodePosition(offset: 1),
+          ),
+        ))
+      ]);
+      await tester.pump();
+
+      final firstNodeIdAfter = testContext.document.first.id;
+      expect(firstNodeIdAfter, equals(firstNodeIdBefore));
+    });
+
+    testWidgetsOnAllPlatforms('node 1 start => node 2 start', (tester) async {
+      final testContext = await tester //
+          .createDocument()
+          .withLongDoc()
+          .pump();
+
+      final firstNodeIdBefore = testContext.document.first.id;
+
+      // Delete content starting at beginning of document to just past the beginning of the next node.
+      testContext.editor.execute([
+        DeleteContentRequest(
+            documentRange: const DocumentRange(
+          start: DocumentPosition(
+            nodeId: '1',
+            nodePosition: TextNodePosition(offset: 0),
+          ),
+          end: DocumentPosition(
+            nodeId: '2',
+            nodePosition: TextNodePosition(offset: 0),
+          ),
+        ))
+      ]);
+      await tester.pump();
+
+      final firstNodeIdAfter = testContext.document.first.id;
+      expect(firstNodeIdAfter, equals(firstNodeIdBefore));
+    });
+
+    testWidgetsOnAllPlatforms('node 1 mid => node 2 mid', (tester) async {
+      final testContext = await tester //
+          .createDocument()
+          .withLongDoc()
+          .pump();
+
+      final firstNodeIdBefore = testContext.document.first.id;
+
+      // Delete content starting at beginning of document to just past the beginning of the next node.
+      testContext.editor.execute([
+        DeleteContentRequest(
+            documentRange: const DocumentRange(
+          start: DocumentPosition(
+            nodeId: '1',
+            nodePosition: TextNodePosition(offset: 1),
+          ),
+          end: DocumentPosition(
+            nodeId: '2',
+            nodePosition: TextNodePosition(offset: 1),
+          ),
+        ))
+      ]);
+      await tester.pump();
+
+      final firstNodeIdAfter = testContext.document.first.id;
+      expect(firstNodeIdAfter, equals(firstNodeIdBefore));
+    });
+  });
 }
