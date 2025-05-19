@@ -899,6 +899,19 @@ void main() {
         );
       });
     });
+
+    test("copyTextInRange with placeholders", () {
+      final txt = AttributedText("Hello World");
+
+      txt.addAttribution(const NamedAttribution('italics'), SpanRange(6, 11));
+
+      final placeholderTxt = txt.insertPlaceholders({0: Object(), 12: Object()});
+
+      final d = placeholderTxt.copyText(11, 12);
+
+      expect(d.toPlainText(), equals("d"));
+      expect(d.getAttributionSpans({const NamedAttribution('italics')}).length, 1);
+    });
   });
 }
 

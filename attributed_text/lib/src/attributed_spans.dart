@@ -978,7 +978,16 @@ class AttributedSpans {
   }
 
   /// Returns a copy of this [AttributedSpans].
-  AttributedSpans copy() {
+  AttributedSpans copy({int? pushAfterOffset}) {
+    // keep all markers before the push offset in the same place
+    // and push all markers after the push offset by one
+    if (pushAfterOffset != null) {
+      final pushedAttributions = _markers
+          .map(
+              (marker) => marker.copyWith(offset: marker.offset >= pushAfterOffset ? marker.offset + 1 : marker.offset))
+          .toList();
+      return AttributedSpans(attributions: pushedAttributions);
+    }
     return AttributedSpans(
       attributions: List.from(_markers),
     );
