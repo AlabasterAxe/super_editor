@@ -568,7 +568,7 @@ class AttributedText {
   }
 
   AttributedText insertPlaceholder(int index, Object placeholder) {
-    return AttributedText(_text, spans.copy(), {
+    return AttributedText(_text, spans.copy(pushAfterOffset: index), {
       // Insert existing placeholders that come before the new placeholder.
       ...Map.fromEntries(placeholders.entries.where((entry) => entry.key < index)),
       // Insert the new placeholder.
