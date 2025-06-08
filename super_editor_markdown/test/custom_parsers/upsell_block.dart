@@ -58,12 +58,12 @@ class UpsellBlockSyntax extends md.BlockSyntax {
 /// to an [UpsellNode].
 class UpsellElementToNodeConverter implements ElementToNodeConverter {
   @override
-  DocumentNode? handleElement(md.Element element) {
+  Iterable<DocumentNode> handleElement(md.Element element) {
     if (element.tag != "upsell") {
-      return null;
+      return [];
     }
 
-    return UpsellNode(Editor.createNodeId());
+    return [UpsellNode(Editor.createNodeId())];
   }
 }
 

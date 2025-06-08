@@ -70,18 +70,20 @@ class CalloutBlockSyntax extends md.BlockSyntax {
 /// to a [ParagraphNode].
 class CalloutElementToNodeConverter implements ElementToNodeConverter {
   @override
-  DocumentNode? handleElement(md.Element element) {
+  Iterable<DocumentNode> handleElement(md.Element element) {
     if (element.tag != "callout") {
-      return null;
+      return [];
     }
 
-    return ParagraphNode(
-      id: Editor.createNodeId(),
-      text: _parseInlineText(element),
-      metadata: const {
-        'blockType': NamedAttribution("callout"),
-      },
-    );
+    return [
+      ParagraphNode(
+        id: Editor.createNodeId(),
+        text: _parseInlineText(element),
+        metadata: const {
+          'blockType': NamedAttribution("callout"),
+        },
+      )
+    ];
   }
 }
 
