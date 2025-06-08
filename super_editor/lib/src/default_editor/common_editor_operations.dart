@@ -5,7 +5,6 @@ import 'package:attributed_text/attributed_text.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:linkify/linkify.dart';
 import 'package:super_editor/src/core/document.dart';
 import 'package:super_editor/src/core/document_composer.dart';
 import 'package:super_editor/src/core/document_layout.dart';
@@ -2380,11 +2379,14 @@ class PasteEditorCommand extends EditCommand {
   PasteEditorCommand({
     required String content,
     required DocumentPosition pastePosition,
+    autoLinkifyUrls = true,
   })  : _content = content,
-        _pastePosition = pastePosition;
+        _pastePosition = pastePosition,
+        _autoLinkifyUrls = autoLinkifyUrls;
 
   final String _content;
   final DocumentPosition _pastePosition;
+  final bool _autoLinkifyUrls;
 
   // The [_content] as [DocumentNode]s so that we only generate node IDs one
   // time. This is critical for undo behavior to work as expected.
@@ -2508,7 +2510,7 @@ class PasteEditorCommand extends EditCommand {
       attributedLines.add(
         AttributedText(
           line,
-          _findUrlSpansInText(pastedText: line),
+          _autoLinkifyUrls ? _findUrlSpansInText(pastedText: line) : null,
         ),
       );
     }
