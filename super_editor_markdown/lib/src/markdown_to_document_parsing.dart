@@ -22,10 +22,13 @@ MutableDocument deserializeMarkdownToDocument(
   List<md.BlockSyntax> customBlockSyntax = const [],
   List<ElementToNodeConverter> customElementToNodeConverters = const [],
   bool encodeHtml = false,
+  String Function()? newNodeId,
 }) {
   final markdownLines = const LineSplitter().convert(markdown).map<md.Line>((String l) {
     return md.Line(l);
   }).toList();
+
+  newNodeId ??= Editor.createNodeId;
 
   final markdownDoc = md.Document(
     encodeHtml: encodeHtml,
@@ -45,7 +48,7 @@ MutableDocument deserializeMarkdownToDocument(
   final markdownNodes = blockParser.parseLines();
 
   // Convert structured markdown to a Document.
-  final nodeVisitor = _MarkdownToDocument(customElementToNodeConverters, encodeHtml, syntax);
+  final nodeVisitor = _MarkdownToDocument(customElementToNodeConverters, encodeHtml, syntax, newNodeId);
   for (final node in markdownNodes) {
     node.accept(nodeVisitor);
   }
@@ -57,15 +60,15 @@ MutableDocument deserializeMarkdownToDocument(
     // For the user to be able to interact with the editor, at least one
     // node is required, so we add an empty paragraph.
     documentNodes.add(
-      ParagraphNode(id: Editor.createNodeId(), text: AttributedText()),
+      ParagraphNode(id: newNodeId(), text: AttributedText()),
     );
   }
 
   // Add 1 hanging line for every 2 blank lines at the end, need this to preserve behavior pre markdown 7.2.1
   final hangingEmptyLines = markdownLines.reversed.takeWhile((md.Line l) => l.isBlankLine);
-  if(hangingEmptyLines.isNotEmpty && documentNodes.lastOrNull is ListItemNode) {
-    for(var i = 0; i < hangingEmptyLines.length ~/ 2; i++) {
-      documentNodes.add(ParagraphNode(id: Editor.createNodeId(), text: AttributedText()));
+  if (hangingEmptyLines.isNotEmpty && documentNodes.lastOrNull is ListItemNode) {
+    for (var i = 0; i < hangingEmptyLines.length ~/ 2; i++) {
+      documentNodes.add(ParagraphNode(id: newNodeId(), text: AttributedText()));
     }
   }
 
@@ -81,10 +84,13 @@ MutableDocument deserializeMarkdownToDocument(
 /// contains [DocumentNode]s that correspond to the visited
 /// markdown content.
 class _MarkdownToDocument implements md.NodeVisitor {
+  String Function()? createNodeId;
+
   _MarkdownToDocument([
     this._elementToNodeConverters = const [],
     this._encodeHtml = false,
     this.syntax = MarkdownSyntax.normal,
+    this.createNodeId,
   ]);
 
   final MarkdownSyntax syntax;
@@ -276,7 +282,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
     final textAlign = element.attributes['textAlign'];
     _content.add(
       ParagraphNode(
-        id: Editor.createNodeId(),
+        id: createNodeId?.call() ?? Editor.createNodeId(),
         text: _parseInlineText(element.textContent),
         metadata: {
           'blockType': headerAttribution,
@@ -291,7 +297,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
 
     _content.add(
       ParagraphNode(
-        id: Editor.createNodeId(),
+        id: createNodeId?.call() ?? Editor.createNodeId(),
         text: attributedText,
         metadata: {
           'textAlign': textAlign,
@@ -303,7 +309,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
   void _addBlockquote(md.Element element) {
     _content.add(
       ParagraphNode(
-        id: Editor.createNodeId(),
+        id: createNodeId?.call() ?? Editor.createNodeId(),
         text: _parseInlineText(element.textContent),
         metadata: const {
           'blockType': blockquoteAttribution,
@@ -323,7 +329,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
 
     _content.add(
       ParagraphNode(
-        id: Editor.createNodeId(),
+        id: createNodeId?.call() ?? Editor.createNodeId(),
         text: AttributedText(
           element.textContent,
         ),
@@ -341,7 +347,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
   }) {
     _content.add(
       ImageNode(
-        id: Editor.createNodeId(),
+        id: createNodeId?.call() ?? Editor.createNodeId(),
         imageUrl: imageUrl,
         altText: altText,
         expectedBitmapSize: expectedBitmapSize,
@@ -351,7 +357,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
 
   void _addHorizontalRule() {
     _content.add(HorizontalRuleNode(
-      id: Editor.createNodeId(),
+      id: createNodeId?.call() ?? Editor.createNodeId(),
     ));
   }
 
@@ -374,7 +380,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
 
     _content.add(
       ListItemNode(
-        id: Editor.createNodeId(),
+        id: createNodeId?.call() ?? Editor.createNodeId(),
         itemType: listItemType,
         indent: indent,
         text: _parseInlineText(content),
@@ -385,7 +391,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
   void _addTask(md.Element element) {
     _content.add(
       TaskNode(
-        id: Editor.createNodeId(),
+        id: createNodeId?.call() ?? Editor.createNodeId(),
         text: _parseInlineText(element.textContent),
         isComplete: element.attributes['completed'] == 'true',
       ),
@@ -536,7 +542,6 @@ abstract class ElementToNodeConverter {
 ///
 /// This [DelimiterSyntax] produces `Element`s with a `u` tag.
 class UnderlineSyntax extends md.DelimiterSyntax {
-
   /// According to the docs:
   ///
   /// https://pub.dev/documentation/markdown/latest/markdown/DelimiterSyntax-class.html
@@ -547,7 +552,7 @@ class UnderlineSyntax extends md.DelimiterSyntax {
   ///
   /// https://github.com/dart-lang/markdown/blob/d53feae0760a4f0aae5ffdfb12d8e6acccf14b40/lib/src/inline_syntaxes/delimiter_syntax.dart#L67
   /// https://github.com/dart-lang/markdown/blob/d53feae0760a4f0aae5ffdfb12d8e6acccf14b40/lib/src/inline_syntaxes/delimiter_syntax.dart#L319
-  static final _tags = [ md.DelimiterTag("u", 1) ];
+  static final _tags = [md.DelimiterTag("u", 1)];
 
   UnderlineSyntax() : super('¬', requiresDelimiterRun: true, allowIntraWord: true, tags: _tags);
 
@@ -560,7 +565,7 @@ class UnderlineSyntax extends md.DelimiterSyntax {
     required String tag,
   }) {
     final element = md.Element('u', getChildren());
-    return [ element ];
+    return [element];
   }
 }
 
@@ -579,7 +584,6 @@ class SingleStrikethroughSyntax extends md.DelimiterSyntax {
           tags: [md.DelimiterTag('del', 1)],
         );
 }
-
 
 /// Parses a paragraph preceded by an alignment token.
 class _ParagraphWithAlignmentSyntax extends _EmptyLinePreservingParagraphSyntax {
