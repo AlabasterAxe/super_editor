@@ -4,7 +4,9 @@ version: 1.0.0
 publish_to: none
 
 environment:
-  sdk: ^3.0.0
+  sdk: ^3.6.0
+
+resolution: workspace
 
 dependencies:
   static_shock:
@@ -13,5 +15,5 @@ dependencies:
       path: packages/static_shock
 
 dev_dependencies:
-  lints: ^2.0.0
+  lints: ^5.0.0
   test: ^1.21.0

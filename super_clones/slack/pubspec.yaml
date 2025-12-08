@@ -5,17 +5,16 @@ publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.6.0 <4.0.0"
+  sdk: ^3.6.0
+
+resolution: workspace
 
 dependencies:
   flutter:
     sdk: flutter
 
-  super_editor:
-    git:
-      url: https://github.com/superlistapp/super_editor.git
-      path: super_editor
-  follow_the_leader: ^0.5.1
+  super_editor: ^0.3.0-dev.40
+  follow_the_leader: ^0.5.2
   overlord: ^0.4.2
   markdown: ^7.2.1
 
@@ -25,13 +24,13 @@ dependencies:
   flutter_svg: ^2.1.0
   intl: ^0.20.2
 
-dependency_overrides:
-  super_editor:
-    path: ../../super_editor
-  super_text_layout:
-    path: ../../super_text_layout
-  attributed_text:
-    path: ../../attributed_text
+# dependency_overrides:
+#   super_editor:
+#     path: ../../super_editor
+#   super_text_layout:
+#     path: ../../super_text_layout
+#   attributed_text:
+#     path: ../../attributed_text
 
 dev_dependencies:
   flutter_test:
