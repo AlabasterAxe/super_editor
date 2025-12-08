@@ -51,12 +51,15 @@ MutableDocument deserializeMarkdownToDocument(
   Iterable<md.InlineSyntax>? inlineMarkdownSyntaxes,
   Iterable<InlineHtmlSyntax>? inlineHtmlSyntaxes,
   bool encodeHtml = false,
+  String Function()? createNodeId,
 }) {
   final markdownLines = const LineSplitter().convert(markdown).map<md.Line>(
     (String l) {
       return md.Line(l);
     },
   ).toList();
+
+  createNodeId ??= Editor.createNodeId;
 
   // Parse markdown string to structured markdown.
   final markdownDoc = md.Document(
@@ -82,6 +85,7 @@ MutableDocument deserializeMarkdownToDocument(
     inlineHtmlSyntaxes: inlineHtmlSyntaxes,
     encodeHtml: encodeHtml,
     syntax: syntax,
+    newNodeId: createNodeId,
   );
   for (final node in markdownNodes) {
     node.accept(nodeVisitor);
@@ -94,7 +98,7 @@ MutableDocument deserializeMarkdownToDocument(
     // For the user to be able to interact with the editor, at least one
     // node is required, so we add an empty paragraph.
     documentNodes.add(
-      ParagraphNode(id: Editor.createNodeId(), text: AttributedText()),
+      ParagraphNode(id: createNodeId(), text: AttributedText()),
     );
   }
 
@@ -102,7 +106,7 @@ MutableDocument deserializeMarkdownToDocument(
   final hangingEmptyLines = markdownLines.reversed.takeWhile((line) => _blankLinePattern.hasMatch(line.content));
   if (hangingEmptyLines.isNotEmpty && documentNodes.lastOrNull is ListItemNode) {
     for (var i = 0; i < hangingEmptyLines.length ~/ 2; i++) {
-      documentNodes.add(ParagraphNode(id: Editor.createNodeId(), text: AttributedText()));
+      documentNodes.add(ParagraphNode(id: createNodeId(), text: AttributedText()));
     }
   }
 
@@ -124,7 +128,10 @@ class _MarkdownToDocument implements md.NodeVisitor {
     this.inlineHtmlSyntaxes,
     this.encodeHtml = false,
     this.syntax = MarkdownSyntax.normal,
+    this.createNodeId,
   });
+
+  String Function()? createNodeId;
 
   final MarkdownSyntax syntax;
 
@@ -162,8 +169,8 @@ class _MarkdownToDocument implements md.NodeVisitor {
   bool visitElementBefore(md.Element element) {
     for (final converter in elementToNodeConverters) {
       final node = converter.handleElement(element);
-      if (node != null) {
-        _content.add(node);
+      if (node.isNotEmpty) {
+        _content.addAll(node);
         return true;
       }
     }
@@ -325,7 +332,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
     final textAlign = element.attributes['textAlign'];
     _content.add(
       ParagraphNode(
-        id: Editor.createNodeId(),
+        id: createNodeId?.call() ?? Editor.createNodeId(),
         text: _parseInlineText(element.textContent),
         metadata: {
           'blockType': headerAttribution,
@@ -340,7 +347,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
 
     _content.add(
       ParagraphNode(
-        id: Editor.createNodeId(),
+        id: createNodeId?.call() ?? Editor.createNodeId(),
         text: attributedText,
         metadata: {
           'textAlign': textAlign,
@@ -352,7 +359,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
   void _addBlockquote(md.Element element) {
     _content.add(
       ParagraphNode(
-        id: Editor.createNodeId(),
+        id: createNodeId?.call() ?? Editor.createNodeId(),
         text: _parseInlineText(element.textContent),
         metadata: const {
           'blockType': blockquoteAttribution,
@@ -372,7 +379,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
 
     _content.add(
       ParagraphNode(
-        id: Editor.createNodeId(),
+        id: createNodeId?.call() ?? Editor.createNodeId(),
         text: AttributedText(
           element.textContent,
         ),
@@ -386,7 +393,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
   void _addImage(_MarkdownImage image) {
     _content.add(
       ImageNode(
-        id: Editor.createNodeId(),
+        id: createNodeId?.call() ?? Editor.createNodeId(),
         imageUrl: image.url,
         altText: image.altText ?? '',
         expectedBitmapSize: image.width != null || image.height != null
@@ -401,7 +408,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
 
   void _addHorizontalRule() {
     _content.add(HorizontalRuleNode(
-      id: Editor.createNodeId(),
+      id: createNodeId?.call() ?? Editor.createNodeId(),
     ));
   }
 
@@ -424,7 +431,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
 
     _content.add(
       ListItemNode(
-        id: Editor.createNodeId(),
+        id: createNodeId?.call() ?? Editor.createNodeId(),
         itemType: listItemType,
         indent: indent,
         text: _parseInlineText(content),
@@ -443,7 +450,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
 
     _content.add(
       TaskNode(
-        id: Editor.createNodeId(),
+        id: createNodeId?.call() ?? Editor.createNodeId(),
         text: _parseInlineText(element.textContent),
         isComplete: checked,
       ),
@@ -483,7 +490,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
 /// the "blockquote" element and create an appropriate [ParagraphNode] to
 /// represent that blockquote in the deserialized [Document].
 abstract class ElementToNodeConverter {
-  DocumentNode? handleElement(md.Element element);
+  Iterable<DocumentNode> handleElement(md.Element element);
 }
 
 /// A Markdown [DelimiterSyntax] that matches underline spans of text, which are represented in

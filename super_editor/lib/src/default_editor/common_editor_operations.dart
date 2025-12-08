@@ -2427,11 +2427,14 @@ class PasteEditorCommand extends EditCommand {
   PasteEditorCommand({
     required String content,
     required DocumentPosition pastePosition,
+    autoLinkifyUrls = true,
   })  : _content = content,
-        _pastePosition = pastePosition;
+        _pastePosition = pastePosition,
+        _autoLinkifyUrls = autoLinkifyUrls;
 
   final String _content;
   final DocumentPosition _pastePosition;
+  final bool _autoLinkifyUrls;
 
   // The [_content] as [DocumentNode]s so that we only generate node IDs one
   // time. This is critical for undo behavior to work as expected.
@@ -2555,7 +2558,7 @@ class PasteEditorCommand extends EditCommand {
       attributedLines.add(
         AttributedText(
           line,
-          _findUrlSpansInText(pastedText: line),
+          _autoLinkifyUrls ? _findUrlSpansInText(pastedText: line) : null,
         ),
       );
     }
