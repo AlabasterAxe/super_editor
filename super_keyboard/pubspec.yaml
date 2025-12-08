@@ -15,6 +15,8 @@ environment:
   sdk: ^3.5.0
   flutter: '>=3.3.0'
 
+resolution: workspace
+
 dependencies:
   flutter:
     sdk: flutter
@@ -34,9 +36,12 @@ dependencies:
   flutter_test_runners: ^0.0.4
 
 dev_dependencies:
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 
-  flutter_test_goldens: 0.0.5
+  flutter_test_goldens:
+    git:
+      url: https://github.com/flutter-bounty-hunters/flutter_test_goldens
+      ref: e35c5d0ebb0cbf24bf33090199ec576671ebed26
 
 flutter:
   # This section identifies this Flutter project as a plugin project.

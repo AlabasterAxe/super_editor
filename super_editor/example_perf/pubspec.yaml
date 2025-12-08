@@ -19,7 +19,9 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.3.0-170.0.dev <4.0.0"
+  sdk: ^3.6.0
+
+resolution: workspace
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -41,17 +43,17 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
 
-dependency_overrides:
+# dependency_overrides:
   # Override to local mono-repo path so devs can test this repo
   # against changes that they're making to other mono-repo packages
-  super_editor:
-    path: ../
-  super_editor_markdown:
-    path: ../../super_editor_markdown
-  super_text_layout:
-    path: ../../super_text_layout
-  attributed_text:
-    path: ../../attributed_text
+#   super_editor:
+#     path: ../
+#   super_editor_markdown:
+#     path: ../../super_editor_markdown
+#   super_text_layout:
+#     path: ../../super_text_layout
+#   attributed_text:
+#     path: ../../attributed_text
 
 dev_dependencies:
   flutter_test:
@@ -62,7 +64,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.0
+  flutter_lints: ^5.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

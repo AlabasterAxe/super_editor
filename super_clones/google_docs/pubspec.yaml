@@ -7,33 +7,34 @@ version: 1.0.0+1
 environment:
   sdk: ^3.6.0
 
+resolution: workspace
+
 dependencies:
   flutter:
     sdk: flutter
 
   cupertino_icons: ^1.0.6
-  follow_the_leader: ^0.5.1
-  super_editor:
-    path: ../../super_editor
+  follow_the_leader: ^0.5.2
+  super_editor: ^0.3.0-dev.40
   super_text_layout:
     path: ../../super_text_layout
   google_fonts: ^6.3.2
   overlord: ^0.4.2
 
-dependency_overrides:
+# dependency_overrides:
   # Override to local mono-repo path so devs can test this repo
   # against changes that they're making to other mono-repo packages
-  super_editor:
-    path: ../../super_editor
-  super_text_layout:
-    path: ../../super_text_layout
-  attributed_text:
-    path: ../../attributed_text
+#   super_editor:
+#     path: ../../super_editor
+#   super_text_layout:
+#     path: ../../super_text_layout
+#   attributed_text:
+#     path: ../../attributed_text
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^5.0.0
 
 flutter:
   # The following line ensures that the Material Icons font is

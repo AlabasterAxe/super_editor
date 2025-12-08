@@ -3,14 +3,15 @@ description: "Demonstrates how to use the super_editor_spellcheck plugin."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ^3.6.0
+
+resolution: workspace
 
 dependencies:
   flutter:
     sdk: flutter
 
-  super_editor:
-    path: ../../super_editor
+  super_editor: ^0.3.0-dev.40
 
   super_editor_spellcheck:
     # When depending on this package from a real application you should use:
@@ -22,10 +23,10 @@ dependencies:
 
   cupertino_icons: ^1.0.6
 
-dependency_overrides:
-  super_editor:
-    path: ../../super_editor
-  url_launcher_android: 6.3.16
+# dependency_overrides:
+#   super_editor:
+#     path: ../../super_editor
+#   url_launcher_android: 6.3.16
 
 dev_dependencies:
   integration_test:
@@ -33,7 +34,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^3.0.0
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true

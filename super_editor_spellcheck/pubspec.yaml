@@ -4,31 +4,33 @@ version: 0.0.1
 homepage:
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ^3.6.0
   flutter: ">=3.3.0"
+
+resolution: workspace
 
 dependencies:
   clock: ^1.1.2
   collection: ^1.18.0
   flutter:
     sdk: flutter
-  follow_the_leader: ^0.5.1
+  follow_the_leader: ^0.5.2
   overlord: ^0.4.2
   plugin_platform_interface: ^2.0.2
 
-  super_editor: ^0.3.0-dev.38
+  super_editor: ^0.3.0-dev.40
   super_text_layout: ^0.1.12
 
-dependency_overrides:
-  super_editor:
-    path: ../super_editor
-  super_text_layout:
-    path: ../super_text_layout
+# dependency_overrides:
+#   super_editor:
+#     path: ../super_editor
+#   super_text_layout:
+#     path: ../super_text_layout
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^5.0.0
   pigeon: ^21.1.0
   flutter_test_goldens:
     git:
