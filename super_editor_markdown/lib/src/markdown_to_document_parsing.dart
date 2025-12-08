@@ -85,7 +85,7 @@ MutableDocument deserializeMarkdownToDocument(
     inlineHtmlSyntaxes: inlineHtmlSyntaxes,
     encodeHtml: encodeHtml,
     syntax: syntax,
-    newNodeId: createNodeId,
+    createNodeId: createNodeId,
   );
   for (final node in markdownNodes) {
     node.accept(nodeVisitor);
