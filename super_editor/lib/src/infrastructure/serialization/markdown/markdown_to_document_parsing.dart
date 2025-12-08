@@ -167,9 +167,9 @@ class _MarkdownToDocument implements md.NodeVisitor {
   @override
   bool visitElementBefore(md.Element element) {
     for (final converter in elementToNodeConverters) {
-      final node = converter.handleElement(element);
-      if (node != null) {
-        _content.add(node);
+      final nodes = converter.handleElement(element);
+      if (nodes.isNotEmpty) {
+        _content.addAll(nodes);
         return true;
       }
     }
@@ -489,7 +489,7 @@ class _MarkdownToDocument implements md.NodeVisitor {
 /// the "blockquote" element and create an appropriate [ParagraphNode] to
 /// represent that blockquote in the deserialized [Document].
 abstract class ElementToNodeConverter {
-  DocumentNode? handleElement(md.Element element);
+  Iterable<DocumentNode> handleElement(md.Element element);
 }
 
 /// A Markdown [DelimiterSyntax] that matches underline spans of text, which are represented in
