@@ -10,3 +10,5 @@ android_text_example/
 ephemeral/
 
 .fvm/
+
+.dart_tool/

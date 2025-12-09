@@ -1,4 +1,4 @@
-name: super_text_layout_example
+name: example
 description: Super Text Layout example app
 
 publish_to: 'none'
@@ -7,8 +7,6 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.6.0
-
-resolution: workspace
 
 dependencies:
   flutter:

@@ -20,8 +20,6 @@ Future<void> main(List<String> arguments) async {
     ))
     ..plugin(const PubPackagePlugin({
       "super_editor",
-      "super_editor_markdown",
-      "super_editor_quill",
       "super_text_layout",
       "attributed_text",
     }))

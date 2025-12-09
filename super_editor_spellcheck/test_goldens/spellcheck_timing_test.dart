@@ -18,11 +18,9 @@ void main() {
       (tester) async {
         final clock = SpellcheckClock.forTesting(tester);
 
-        await FilmStrip(
-          tester,
-          goldenName: "spelling-error-underline-reset_${spellcheckDelayVariant.currentValue!.fileNameQualifier}",
-          layout: SceneLayout.column,
-        )
+        await Timeline('does not automatically re-apply spellcheck underline after deleting misspelled word',
+                fileName: "spelling-error-underline-reset_${spellcheckDelayVariant.currentValue!.fileNameQualifier}",
+                layout: const ColumnSceneLayout())
             .setup((tester) async {
               final spellCheckerService = _FakeSpellChecker({
                 "Hllo": ["Hello"],
@@ -100,7 +98,7 @@ void main() {
               await tester.pump();
             })
             .takePhoto("Report New Error", find.byType(ParagraphComponent))
-            .renderOrCompareGolden();
+            .run(tester);
       },
       variant: spellcheckDelayVariant,
     );
@@ -111,11 +109,11 @@ void main() {
       (tester) async {
         final clock = SpellcheckClock.forTesting(tester);
 
-        await FilmStrip(
-          tester,
-          goldenName:
+        await Timeline(
+          'immediately adjusts downstream spellcheck underlines when typing new characters',
+          fileName:
               "spelling-error-underlines-after-upstream-typing_${spellcheckDelayVariant.currentValue!.fileNameQualifier}",
-          layout: SceneLayout.column,
+          layout: const ColumnSceneLayout(),
         )
             .setup((tester) async {
               final spellCheckerService = _FakeSpellChecker({
@@ -165,7 +163,7 @@ void main() {
               await tester.pressBackspace();
             })
             .takePhoto("After deleting characters", find.byType(ParagraphComponent))
-            .renderOrCompareGolden();
+            .run(tester);
       },
       variant: spellcheckDelayVariant,
     );
@@ -176,11 +174,11 @@ void main() {
       (tester) async {
         final clock = SpellcheckClock.forTesting(tester);
 
-        await FilmStrip(
-          tester,
-          goldenName:
+        await Timeline(
+          'immediately adjusts downstream spellcheck underlines when replacing upstream word',
+          fileName:
               "spelling-error-underlines-after-upstream-replacement_${spellcheckDelayVariant.currentValue!.fileNameQualifier}",
-          layout: SceneLayout.column,
+          layout: const ColumnSceneLayout(),
         )
             .setup((tester) async {
               final spellCheckerService = _FakeSpellChecker({
@@ -223,7 +221,7 @@ void main() {
               await tester.pump();
             })
             .takePhoto("After correcting first word", find.byType(ParagraphComponent))
-            .renderOrCompareGolden();
+            .run(tester);
       },
       variant: spellcheckDelayVariant,
     );
