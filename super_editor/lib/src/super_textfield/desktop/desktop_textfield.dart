@@ -1253,17 +1253,17 @@ class _SuperTextFieldGestureInteractorState extends State<SuperTextFieldGestureI
                   ..gestureSettings = gestureSettings;
               },
             ),
-            PanGestureRecognizer: GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
-              () => PanGestureRecognizer(),
-              (PanGestureRecognizer recognizer) {
-                recognizer
-                  ..onStart = _onPanStart
-                  ..onUpdate = _onPanUpdate
-                  ..onEnd = _onPanEnd
-                  ..onCancel = _onPanCancel
-                  ..gestureSettings = gestureSettings;
-              },
-            ),
+            // PanGestureRecognizer: GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
+            //   () => PanGestureRecognizer(),
+            //   (PanGestureRecognizer recognizer) {
+            //     recognizer
+            //       ..onStart = _onPanStart
+            //       ..onUpdate = _onPanUpdate
+            //       ..onEnd = _onPanEnd
+            //       // ..onCancel = _onPanCancel
+            //       ..gestureSettings = gestureSettings;
+            //   },
+            // ),
           },
           child: Listener(
             onPointerHover: _onMouseMove,
