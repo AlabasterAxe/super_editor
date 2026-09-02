@@ -1,3 +1,13 @@
+## [0.4.0]
+### March 27, 2026
+* BREAKING: Remove `WidgetTester` parameter from keyboard simulator API so that it can
+  be used in a wider variety of testing use-cases.
+
+## [0.3.1]
+### Jan 5, 2026
+ * FIX: Wait one extra frame to report keyboard open state, to deal with Samsung
+   Galaxy S24 (and maybe other) devices.
+
 ## [0.3.0]
 ### Nov 4, 2025
  * BREAKING: Moved logging to a class called `SKLog`, made log printer configurable by client apps.

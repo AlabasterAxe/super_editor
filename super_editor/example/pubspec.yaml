@@ -43,8 +43,8 @@ dependencies:
 
   super_editor:
     path: ../
-  super_keyboard: ^0.3.0
-  follow_the_leader: ^0.5.2
+  super_keyboard: ^0.4.0
+  follow_the_leader: ^0.5.3
   overlord: 0.4.2
 
 dependency_overrides:

@@ -5,7 +5,6 @@ import 'package:flutter_test_runners/flutter_test_runners.dart';
 import 'package:super_editor/super_editor.dart';
 import 'package:super_editor/super_editor_test.dart';
 
-import '../../supereditor_test_tools.dart';
 import '../../test_documents.dart';
 
 void main() {
@@ -140,7 +139,7 @@ void main() {
               ),
             ],
           ),
-          tagRule: const TagRule(trigger: "/"),
+          tagRule: TagRule(trigger: "/"),
         );
 
         // Place the caret at "before |"
@@ -179,7 +178,7 @@ void main() {
               ),
             ],
           ),
-          tagRule: const TagRule(trigger: "@", excludedCharacters: {" "}),
+          tagRule: TagRule(trigger: "@", excludedCharacters: {" "}),
         );
 
         // Place the caret at "before |"

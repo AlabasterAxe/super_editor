@@ -1,5 +1,5 @@
-import 'dart:ui';
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -17,9 +17,10 @@ import 'package:super_editor/src/default_editor/text_tools.dart';
 import 'package:super_editor/src/document_operations/selection_operations.dart';
 import 'package:super_editor/src/infrastructure/_logging.dart';
 import 'package:super_editor/src/infrastructure/content_layers.dart';
-import 'package:super_editor/src/infrastructure/flutter/empty_box.dart';
-import 'package:super_editor/src/infrastructure/flutter/eager_pan_gesture_recognizer.dart';
+import 'package:super_editor/src/infrastructure/documents/document_selection.dart';
 import 'package:super_editor/src/infrastructure/flutter/build_context.dart';
+import 'package:super_editor/src/infrastructure/flutter/eager_pan_gesture_recognizer.dart';
+import 'package:super_editor/src/infrastructure/flutter/empty_box.dart';
 import 'package:super_editor/src/infrastructure/flutter/flutter_scheduler.dart';
 import 'package:super_editor/src/infrastructure/multi_tap_gesture.dart';
 import 'package:super_editor/src/infrastructure/platforms/ios/floating_cursor.dart';
@@ -32,7 +33,6 @@ import 'package:super_editor/src/infrastructure/platforms/platform.dart';
 import 'package:super_editor/src/infrastructure/signal_notifier.dart';
 import 'package:super_editor/src/infrastructure/sliver_hybrid_stack.dart';
 import 'package:super_editor/src/infrastructure/touch_controls.dart';
-import 'package:super_keyboard/super_keyboard.dart';
 
 import '../infrastructure/document_gestures.dart';
 import '../infrastructure/document_gestures_interaction_overrides.dart';
@@ -266,6 +266,7 @@ class IosDocumentTouchInteractor extends StatefulWidget {
     required this.document,
     required this.getDocumentLayout,
     required this.selection,
+    required this.isImeConnected,
     this.openKeyboardWhenTappingExistingSelection = true,
     this.openKeyboardOnSelectionChange = true,
     required this.openSoftwareKeyboard,
@@ -284,6 +285,14 @@ class IosDocumentTouchInteractor extends StatefulWidget {
   final Document document;
   final DocumentLayout Function() getDocumentLayout;
   final ValueListenable<DocumentSelection?> selection;
+
+  /// A listenable that reports whether the IME is currently connected to this
+  /// editor, which means either a software keyboard or hardware keyboard is
+  /// currently configured to edit the document in this editor.
+  ///
+  /// This signal is used to, for example, to decide whether we should show
+  /// the popover toolbar on tap.
+  final ValueListenable<bool> isImeConnected;
 
   /// {@macro openKeyboardWhenTappingExistingSelection}
   final bool openKeyboardWhenTappingExistingSelection;
@@ -371,6 +380,10 @@ class _IosDocumentTouchInteractorState extends State<IosDocumentTouchInteractor>
 
     widget.document.addListener(_onDocumentChange);
 
+    widget.focusNode.addListener(_onFocusChange);
+
+    widget.isImeConnected.addListener(_onImeConnectionChange);
+
     _floatingCursorListener = FloatingCursorListener(
       onStart: _onFloatingCursorStart,
       onStop: _onFloatingCursorStop,
@@ -407,6 +420,20 @@ class _IosDocumentTouchInteractorState extends State<IosDocumentTouchInteractor>
       oldWidget.document.removeListener(_onDocumentChange);
       widget.document.addListener(_onDocumentChange);
     }
+
+    if (widget.focusNode != oldWidget.focusNode) {
+      oldWidget.focusNode.removeListener(_onFocusChange);
+      widget.focusNode.addListener(_onFocusChange);
+    }
+
+    if (widget.isImeConnected != oldWidget.isImeConnected) {
+      oldWidget.isImeConnected.removeListener(_onImeConnectionChange);
+      widget.isImeConnected.addListener(_onImeConnectionChange);
+
+      if (oldWidget.isImeConnected.value != widget.isImeConnected.value) {
+        _onImeConnectionChange();
+      }
+    }
   }
 
   @override
@@ -416,6 +443,10 @@ class _IosDocumentTouchInteractorState extends State<IosDocumentTouchInteractor>
     _controlsController!.floatingCursorController.removeListener(_floatingCursorListener);
     _controlsController!.floatingCursorController.cursorGeometryInViewport
         .removeListener(_onFloatingCursorGeometryChange);
+
+    widget.isImeConnected.removeListener(_onImeConnectionChange);
+
+    widget.focusNode.removeListener(_onFocusChange);
 
     widget.document.removeListener(_onDocumentChange);
 
@@ -447,6 +478,23 @@ class _IosDocumentTouchInteractorState extends State<IosDocumentTouchInteractor>
     onNextFrame((_) {
       _ensureSelectionExtentIsVisible();
     });
+  }
+
+  void _onFocusChange() {
+    if (!widget.focusNode.hasFocus) {
+      // Overlay controls shouldn't be visible when there's no focus.
+      _controlsController
+        ?..hideToolbar()
+        ..hideMagnifier();
+    }
+  }
+
+  void _onImeConnectionChange() {
+    if (!widget.isImeConnected.value) {
+      // Our editor doesn't have an IME connection. Ensure that our visual state
+      // is acceptable when we don't have an open IME connection.
+      _controlsController?.hideToolbar();
+    }
   }
 
   void _ensureSelectionExtentIsVisible() {
@@ -662,8 +710,7 @@ class _IosDocumentTouchInteractorState extends State<IosDocumentTouchInteractor>
           selection.extent.nodeId == docPosition.nodeId &&
           selection.extent.nodePosition.isEquivalentTo(docPosition.nodePosition);
 
-      if (didTapOnExistingSelection &&
-          SuperKeyboard.instance.mobileGeometry.value.keyboardState == KeyboardState.open) {
+      if (didTapOnExistingSelection && widget.isImeConnected.value) {
         // Toggle the toolbar display when the user taps on the collapsed caret,
         // or on top of an existing selection.
         //
@@ -785,6 +832,10 @@ class _IosDocumentTouchInteractorState extends State<IosDocumentTouchInteractor>
       }
 
       if (!didSelectContent) {
+        didSelectContent = selectContentUnitAt(widget.editor, _docLayout, docOffset);
+      }
+
+      if (!didSelectContent) {
         // Place the document selection at the location where the
         // user tapped.
         _selectPosition(docPosition);
@@ -866,7 +917,15 @@ class _IosDocumentTouchInteractorState extends State<IosDocumentTouchInteractor>
         docPosition: docPosition,
         docLayout: _docLayout,
       );
-      if (!didSelectParagraph) {
+
+      final didSelectComponent = !didSelectParagraph &&
+          selectComponentAt(
+            widget.editor,
+            documentPosition: docPosition,
+            documentLayout: _docLayout,
+          );
+
+      if (!didSelectParagraph && !didSelectComponent) {
         // Place the document selection at the location where the
         // user tapped.
         _selectPosition(docPosition);
